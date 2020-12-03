@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,15 +52,27 @@ namespace DiscordInvite
         private async Task OnMemberAdded(DiscordClient sender, GuildMemberAddEventArgs e)
         {
             ConfigJson config = await GetConfig();
+            DiscordMember daryl = await e.Guild.GetMemberAsync(229594828889915392);
             foreach (DSharpPlus.Entities.DiscordInvite discordInvite in await e.Guild.GetInvitesAsync())
             {
-                if (discordInvite.Uses != invitesCount[discordInvite.Code])
+                Console.WriteLine(discordInvite.Code + " => " + discordInvite.Inviter.Username);
+                if (discordInvite.Uses == invitesCount[discordInvite.Code]) continue;
+                DiscordRole role = e.Guild.GetRole(config.InviteRole[discordInvite.Code]);
+                try
                 {
-                    await e.Member.GrantRoleAsync(e.Guild.GetRole(config.InviteRole[discordInvite.Code]));
+                    await e.Member.GrantRoleAsync(role);
+                }
+                catch (Exception exception)
+                {
+                    await daryl.SendMessageAsync($"Failed to grant {role.Name} to {e.Member.Username} \n Error: {exception.Message}");
                     invitesCount[discordInvite.Code] = discordInvite.Uses;
                     return;
                 }
+                invitesCount[discordInvite.Code] = discordInvite.Uses;
+                await daryl.SendMessageAsync($"Granted {role.Name} to {e.Member.Username}");
+                return;
             }
+            await daryl.SendMessageAsync($"Failed to grant any roles to {e.Member.Username}");
         }
 
         public static async Task<ConfigJson> GetConfig()
