@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -42,7 +45,35 @@ namespace DiscordInvite.Commands
             }
 
             await Bot.UpdateConfig(config);
-            await ctx.Channel.SendMessageAsync("Added role");
+            await ctx.Channel.SendMessageAsync("Added role").ConfigureAwait(false);
+        }
+
+        [Command("Avatar")]
+        public async Task SetAvatar(CommandContext ctx, string name , string url)
+        {
+            try
+            {
+                using (WebClient webClient = new WebClient()) 
+                {
+                    var data = webClient.DownloadData(url);
+
+                    await using (MemoryStream mem = new MemoryStream(data)) 
+                    {
+                        try
+                        {
+                            await ctx.Client.UpdateCurrentUserAsync(name, mem).ConfigureAwait(false);
+                        }
+                        catch (Exception e)
+                        {
+                            await ctx.Channel.SendMessageAsync(e.Message).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await ctx.Channel.SendMessageAsync(e.Message).ConfigureAwait(false);
+            }
         }
     }
 }
