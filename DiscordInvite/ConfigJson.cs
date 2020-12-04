@@ -7,9 +7,9 @@ namespace DiscordInvite
     public struct ConfigJson
     {
         [JsonProperty("token")]
-        public string Token { get; private set; }
+        public string Token { get; set; }
         [JsonProperty("prefix")]
-        public string Prefix { get; private set; }
+        public string Prefix { get; set; }
 
         [JsonProperty("inviteRole")]
         public Dictionary<string, ulong> InviteRole { get; set;}

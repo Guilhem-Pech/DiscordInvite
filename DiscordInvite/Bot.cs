@@ -18,15 +18,26 @@ namespace DiscordInvite
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
 
-        public Dictionary<string, int> invitesCount; 
-            
+        public Dictionary<string, int> invitesCount;
+
+        public string Token { get; set; }
+        
+        public Bot(string token = null)
+        {
+           Token = token;
+        }
+
         public async Task RunAsync()
         {
             ConfigJson configJson = await GetConfig();
-            
+            if (Token != null)
+            {
+                configJson.Token = Token;
+                await UpdateConfig(configJson);
+            }
             DiscordConfiguration config = new DiscordConfiguration
             {
-                Token = configJson.Token, 
+                Token = Token ?? configJson.Token, 
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug,
